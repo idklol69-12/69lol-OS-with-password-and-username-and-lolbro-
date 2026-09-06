@@ -6,4 +6,9 @@ then sign up by typing your username and password and lolbro then click sign up 
 and then you see this red thingy
 <img width="33" height="18" alt="image" src="https://github.com/user-attachments/assets/08959ddb-8e20-43be-a7f1-f8bd5400fc52" />
 you can move it by 8 for up and U for left and I for right and J for down and K for right click and M for left click
-and that's how you can install 69Lol OS and sign up and move the moverlol
+and if you want add a file then go to file explorer and then open it 
+<img width="452" height="271" alt="image" src="https://github.com/user-attachments/assets/62542109-1667-4ab1-9b76-764757d3c619" />
+and then click upload file or new file
+<img width="197" height="32" alt="image" src="https://github.com/user-attachments/assets/1876ac6a-c659-4578-99b5-fd7042387c13" />
+and then
+that's how you can install 69Lol OS and sign up and move the moverlol and upload / make a file !!
