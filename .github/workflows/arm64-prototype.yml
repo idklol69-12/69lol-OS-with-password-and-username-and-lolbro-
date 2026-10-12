@@ -1,0 +1,46 @@
+name: Build 69LolOS ARM64 prototype
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - ".github/workflows/arm64-prototype.yml"
+      - "native-os/**"
+
+permissions:
+  contents: read
+
+jobs:
+  build-arm64-prototype:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - name: Check out 69LolOS
+        uses: actions/checkout@v4
+
+      - name: Install build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential git cpio unzip rsync bc wget file python3
+
+      - name: Get Buildroot
+        run: git clone --depth 1 https://github.com/buildroot/buildroot.git buildroot
+
+      - name: Configure ARM64 virtual-machine prototype
+        run: |
+          cd buildroot
+          make qemu_aarch64_virt_defconfig
+
+      - name: Build ARM64 Linux and root filesystem
+        run: |
+          cd buildroot
+          make -j2
+
+      - name: Upload build outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: 69LolOS-ARM64-QEMU-prototype
+          path: |
+            buildroot/output/images/*
+          if-no-files-found: error
+          retention-days: 14
