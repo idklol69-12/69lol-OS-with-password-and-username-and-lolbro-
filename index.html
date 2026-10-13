@@ -452,13 +452,20 @@
         </div>
         <button class="close-btn" onclick="closeApp('browserApp')">✕</button>
       </div>
-      <div class="window-body" style="height: calc(100% - 35px); display: flex; flex-direction: column;">
-        <div style="display: flex; gap: 8px; margin-bottom: 10px;">
-          <input type="text" id="browserUrl" value="https://loless.netlify.app" style="flex: 1; padding: 6px; background: #222; color: #fff; border: 1px solid #444; border-radius: 4px;">
-          <button class="install-btn" onclick="navigateBrowser()">Go</button>
-          <button class="install-btn" style="background:#28a745;" onclick="openExternalBrowser()">Open External ↗</button>
+      <div class="window-body" style="height: calc(100% - 35px); display: flex; flex-direction: column; gap: 8px;">
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button class="install-btn" onclick="browserGoHome()">⌂ Home</button>
+          <button class="install-btn" onclick="browserQuickLink('https://www.youtube.com/')">▶ YouTube</button>
+          <button class="install-btn" onclick="browserQuickLink('https://www.roblox.com/')">🎮 Roblox</button>
+          <button class="install-btn" style="background:#555" onclick="browserReload()">↻ Reload</button>
         </div>
-        <iframe id="browserFrame" src="https://loless.netlify.app" style="width: 100%; flex: 1; border: 1px solid #444; background: #fff;" frameborder="0"></iframe>
+        <div style="display: flex; gap: 8px;">
+          <input type="text" id="browserUrl" value="https://www.google.com/" aria-label="Website address" placeholder="Type a website address..." onkeydown="if(event.key==='Enter'){navigateBrowser();}" style="flex: 1; min-width:0; padding: 8px; background: #222; color: #fff; border: 1px solid #555; border-radius: 4px;">
+          <button class="install-btn" onclick="navigateBrowser()">Go</button>
+          <button class="install-btn" style="background:#28a745;" onclick="openExternalBrowser()">Open in Browser ↗</button>
+        </div>
+        <div style="font-size:12px;color:#aaa;">If a website blocks being shown inside this window, use <b>Open in Browser ↗</b>. This OS browser window is not Chromium yet.</div>
+        <iframe id="browserFrame" title="Fraud OS browser preview" src="https://www.google.com/webhp?igu=1" referrerpolicy="strict-origin-when-cross-origin" style="width: 100%; flex: 1; min-height:180px; border: 1px solid #444; border-radius:4px; background: #fff;" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"></iframe>
       </div>
     </div>
   </div>
@@ -978,26 +985,45 @@
     }
 
     // Live Web Navigation
-    function navigateBrowser() {
-      var url = document.getElementById("browserUrl").value;
-      if (url.indexOf("http://") !== 0 && url.indexOf("https://") !== 0) {
-        url = "https://" + url;
-        document.getElementById("browserUrl").value = url;
+    function normalizeBrowserUrl(value) {
+      var url = (value || "").trim();
+      if (!url) return "https://www.google.com/";
+      if (!/^https?:\/\//i.test(url)) {
+        if (url.indexOf(" ") !== -1 || url.indexOf(".") === -1) {
+          url = "https://www.google.com/search?q=" + encodeURIComponent(url);
+        } else {
+          url = "https://" + url;
+        }
       }
+      return url;
+    }
+
+    function navigateBrowser() {
+      var input = document.getElementById("browserUrl");
+      var url = normalizeBrowserUrl(input.value);
+      input.value = url;
       document.getElementById("browserFrame").src = url;
     }
 
+    function browserQuickLink(url) {
+      document.getElementById("browserUrl").value = url;
+      navigateBrowser();
+    }
+
+    function browserGoHome() {
+      browserQuickLink("https://www.google.com/webhp?igu=1");
+    }
+
+    function browserReload() {
+      var frame = document.getElementById("browserFrame");
+      try { frame.contentWindow.location.reload(); }
+      catch (e) { frame.src = frame.src; }
+    }
+
     function openExternalBrowser() {
-      var url = document.getElementById("browserUrl").value;
-      if (url.indexOf("http://") !== 0 && url.indexOf("https://") !== 0) {
-        url = "https://" + url;
-      }
-      try {
-        var shell = new ActiveXObject("WScript.Shell");
-        shell.Run('"' + url + '"');
-      } catch (e) {
-        window.open(url, '_blank');
-      }
+      var url = normalizeBrowserUrl(document.getElementById("browserUrl").value);
+      document.getElementById("browserUrl").value = url;
+      window.open(url, "_blank", "noopener");
     }
 
     function toggleStartMenu() {
