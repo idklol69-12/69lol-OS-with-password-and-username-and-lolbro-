@@ -465,7 +465,7 @@
           <button class="install-btn" style="background:#28a745;" onclick="openExternalBrowser()">Open in Browser ↗</button>
         </div>
         <div style="font-size:12px;color:#aaa;">YouTube video links can play inside this window. Some sites, including Roblox, may block embedding because this is a website browser, not full Chromium.</div>
-        <iframe id="browserFrame" title="Fraud OS browser preview" src="https://www.google.com/webhp?igu=1" referrerpolicy="strict-origin-when-cross-origin" style="width: 100%; flex: 1; min-height:180px; border: 1px solid #444; border-radius:4px; background: #fff;" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"></iframe>
+        <iframe id="browserFrame" title="Fraud OS browser preview" src="https://www.google.com/webhp?igu=1" referrerpolicy="origin" style="width: 100%; flex: 1; min-height:180px; border: 1px solid #444; border-radius:4px; background: #fff;" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"></iframe>
       </div>
     </div>
   </div>
@@ -1013,7 +1013,7 @@
           }
         }
         if (videoId && /^[a-zA-Z0-9_-]{6,}$/.test(videoId)) {
-          return "https://www.youtube-nocookie.com/embed/" + videoId + "?autoplay=0";
+          return "https://www.youtube.com/embed/" + videoId + "?autoplay=0";
         }
       } catch (e) {}
       return "";
