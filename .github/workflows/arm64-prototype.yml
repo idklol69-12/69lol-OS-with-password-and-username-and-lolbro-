@@ -42,7 +42,7 @@ jobs:
           ./support/scripts/config --enable BR2_PACKAGE_CA_CERTIFICATES
           ./support/scripts/config --enable BR2_PACKAGE_UTIL_LINUX
           ./support/scripts/config --enable BR2_TARGET_ROOTFS_EXT2
-          ./support/scripts/config --set-str BR2_TARGET_ROOTFS_EXT2_4 "1"
+          ./support/scripts/config --enable BR2_TARGET_ROOTFS_EXT2_4
           make olddefconfig
 
       - name: Build ARM64 kernel and complete console root filesystem
