@@ -21,7 +21,7 @@ jobs:
       - name: Install image tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y curl libguestfs-tools qemu-system-arm qemu-efi-aarch64 cloud-image-utils
+          sudo apt-get install -y curl libguestfs-tools qemu-system-arm qemu-efi-aarch64 cloud-image-utils passt
 
       - name: Download Debian ARM64 cloud image
         run: |
