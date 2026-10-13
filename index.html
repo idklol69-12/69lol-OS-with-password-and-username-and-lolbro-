@@ -464,7 +464,7 @@
           <button class="install-btn" onclick="navigateBrowser()">Go</button>
           <button class="install-btn" style="background:#28a745;" onclick="openExternalBrowser()">Open in Browser ↗</button>
         </div>
-        <div style="font-size:12px;color:#aaa;">If a website blocks being shown inside this window, use <b>Open in Browser ↗</b>. This OS browser window is not Chromium yet.</div>
+        <div style="font-size:12px;color:#aaa;">YouTube video links can play inside this window. Some sites, including Roblox, may block embedding because this is a website browser, not full Chromium.</div>
         <iframe id="browserFrame" title="Fraud OS browser preview" src="https://www.google.com/webhp?igu=1" referrerpolicy="strict-origin-when-cross-origin" style="width: 100%; flex: 1; min-height:180px; border: 1px solid #444; border-radius:4px; background: #fff;" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"></iframe>
       </div>
     </div>
@@ -719,7 +719,7 @@
         openApp(file.target);
       } else if (file.type === "url") {
         document.getElementById("browserUrl").value = file.url;
-        document.getElementById("browserFrame").src = file.url;
+        navigateBrowser();
         openApp("browserApp");
       } else if (file.type === "image") {
         document.getElementById("mediaTitle").innerHTML = "🖼️ " + file.name;
@@ -998,11 +998,34 @@
       return url;
     }
 
+    function getYouTubeEmbedUrl(url) {
+      try {
+        var parsed = new URL(url);
+        var host = parsed.hostname.toLowerCase().replace(/^www\./, "");
+        var videoId = "";
+        if (host === "youtu.be") {
+          videoId = parsed.pathname.replace(/^\//, "").split("/")[0];
+        } else if (host === "youtube.com" || host === "m.youtube.com" || host === "music.youtube.com") {
+          if (parsed.pathname === "/watch") videoId = parsed.searchParams.get("v") || "";
+          else {
+            var match = parsed.pathname.match(/^\/(?:embed|shorts|live)\/([^/?]+)/);
+            if (match) videoId = match[1];
+          }
+        }
+        if (videoId && /^[a-zA-Z0-9_-]{6,}$/.test(videoId)) {
+          return "https://www.youtube-nocookie.com/embed/" + videoId + "?autoplay=0";
+        }
+      } catch (e) {}
+      return "";
+    }
+
     function navigateBrowser() {
       var input = document.getElementById("browserUrl");
       var url = normalizeBrowserUrl(input.value);
       input.value = url;
-      document.getElementById("browserFrame").src = url;
+      var frame = document.getElementById("browserFrame");
+      var embedUrl = getYouTubeEmbedUrl(url);
+      frame.src = embedUrl || url;
     }
 
     function browserQuickLink(url) {
