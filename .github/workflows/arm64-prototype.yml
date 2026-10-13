@@ -30,19 +30,16 @@ jobs:
         run: |
           cd buildroot
           make qemu_aarch64_virt_defconfig
-          ./support/scripts/config --enable BR2_PACKAGE_BASH
-          ./support/scripts/config --enable BR2_PACKAGE_NANO
-          ./support/scripts/config --enable BR2_PACKAGE_HTOP
-          ./support/scripts/config --enable BR2_PACKAGE_PYTHON3
-          ./support/scripts/config --enable BR2_PACKAGE_OPENSSH
-          ./support/scripts/config --enable BR2_PACKAGE_CURL
-          ./support/scripts/config --enable BR2_PACKAGE_WGET
-          ./support/scripts/config --enable BR2_PACKAGE_IPROUTE2
-          ./support/scripts/config --enable BR2_PACKAGE_IPUTILS
-          ./support/scripts/config --enable BR2_PACKAGE_CA_CERTIFICATES
-          ./support/scripts/config --enable BR2_PACKAGE_UTIL_LINUX
-          ./support/scripts/config --enable BR2_TARGET_ROOTFS_EXT2
-          ./support/scripts/config --enable BR2_TARGET_ROOTFS_EXT2_4
+          # Buildroot uses a generated .config; edit it directly here.
+          for symbol in BR2_PACKAGE_BASH BR2_PACKAGE_NANO BR2_PACKAGE_HTOP BR2_PACKAGE_PYTHON3 BR2_PACKAGE_OPENSSH BR2_PACKAGE_CURL BR2_PACKAGE_WGET BR2_PACKAGE_IPROUTE2 BR2_PACKAGE_IPUTILS BR2_PACKAGE_CA_CERTIFICATES BR2_PACKAGE_UTIL_LINUX BR2_TARGET_ROOTFS_EXT2 BR2_TARGET_ROOTFS_EXT2_4; do
+            if grep -q "^# ${symbol} is not set$" .config; then
+              sed -i "s/^# ${symbol} is not set$/${symbol}=y/" .config
+            elif grep -q "^${symbol}=" .config; then
+              sed -i "s/^${symbol}=.*/${symbol}=y/" .config
+            else
+              echo "${symbol}=y" >> .config
+            fi
+          done
           make olddefconfig
 
       - name: Build ARM64 kernel and complete console root filesystem
