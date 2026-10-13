@@ -1,4 +1,4 @@
-name: Build 69LolOS ARM64 prototype
+name: Build 69LolOS ARM64 for QEMU
 
 on:
   workflow_dispatch:
@@ -11,36 +11,69 @@ permissions:
   contents: read
 
 jobs:
-  build-arm64-prototype:
+  build-arm64-qemu:
     runs-on: ubuntu-24.04
-    timeout-minutes: 90
+    timeout-minutes: 180
     steps:
       - name: Check out 69LolOS
         uses: actions/checkout@v4
 
-      - name: Install build tools
+      - name: Install build tools and QEMU
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential git cpio unzip rsync bc wget file python3
+          sudo apt-get install -y build-essential git cpio unzip rsync bc wget file python3 qemu-system-arm
 
       - name: Get Buildroot
         run: git clone --depth 1 https://github.com/buildroot/buildroot.git buildroot
 
-      - name: Configure ARM64 virtual-machine prototype
+      - name: Configure full ARM64 QEMU system
         run: |
           cd buildroot
           make qemu_aarch64_virt_defconfig
+          ./support/scripts/config --enable BR2_PACKAGE_BASH
+          ./support/scripts/config --enable BR2_PACKAGE_NANO
+          ./support/scripts/config --enable BR2_PACKAGE_HTOP
+          ./support/scripts/config --enable BR2_PACKAGE_PYTHON3
+          ./support/scripts/config --enable BR2_PACKAGE_OPENSSH
+          ./support/scripts/config --enable BR2_PACKAGE_CURL
+          ./support/scripts/config --enable BR2_PACKAGE_WGET
+          ./support/scripts/config --enable BR2_PACKAGE_IPROUTE2
+          ./support/scripts/config --enable BR2_PACKAGE_IPUTILS
+          ./support/scripts/config --enable BR2_PACKAGE_CA_CERTIFICATES
+          ./support/scripts/config --enable BR2_PACKAGE_UTIL_LINUX
+          ./support/scripts/config --enable BR2_TARGET_ROOTFS_EXT2
+          ./support/scripts/config --set-str BR2_TARGET_ROOTFS_EXT2_4 "1"
+          make olddefconfig
 
-      - name: Build ARM64 Linux and root filesystem
+      - name: Build ARM64 kernel and complete console root filesystem
         run: |
           cd buildroot
           make -j2
 
-      - name: Upload build outputs
+      - name: Smoke-test boot in QEMU
+        shell: bash
+        run: |
+          set -o pipefail
+          cd buildroot/output/images
+          test -s Image
+          test -s rootfs.ext4
+          timeout 90s qemu-system-aarch64 \
+            -machine virt -cpu cortex-a57 -m 1024 -smp 2 \
+            -kernel Image \
+            -drive file=rootfs.ext4,if=none,format=raw,id=hd0 \
+            -device virtio-blk-device,drive=hd0 \
+            -append "root=/dev/vda rw console=ttyAMA0" \
+            -nographic -no-reboot 2>&1 | tee qemu-boot.log
+          grep -E "Welcome to Buildroot|login:" qemu-boot.log
+
+      - name: Upload complete QEMU OS image files
         uses: actions/upload-artifact@v4
         with:
-          name: 69LolOS-ARM64-QEMU-prototype
+          name: 69LolOS-ARM64-QEMU-complete
           path: |
-            buildroot/output/images/*
+            buildroot/output/images/Image
+            buildroot/output/images/rootfs.ext4
+            buildroot/output/images/rootfs.cpio
+            buildroot/output/images/rootfs.tar
           if-no-files-found: error
           retention-days: 14
