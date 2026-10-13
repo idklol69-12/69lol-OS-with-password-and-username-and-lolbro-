@@ -31,23 +31,64 @@ jobs:
             --output output/69LolOS-Chromium-ARM64.qcow2
           qemu-img info output/69LolOS-Chromium-ARM64.qcow2
 
-      - name: Install desktop and Chromium into image
-        env:
-          LIBGUESTFS_BACKEND: direct
+      - name: Prepare Debian first-boot desktop setup
         run: |
-          sudo virt-customize -a output/69LolOS-Chromium-ARM64.qcow2 \
-            --update \
-            --install "xfce4,lightdm,chromium,dbus-x11,xserver-xorg,network-manager,ca-certificates,fonts-liberation,sudo,openssh-server" \
-            --run-command "id -u fraud >/dev/null 2>&1 || useradd -m -s /bin/bash fraud" \
-            --run-command "echo 'fraud:69LolOS' | chpasswd" \
-            --run-command "usermod -aG sudo fraud" \
-            --run-command "mkdir -p /home/fraud/.config/autostart /home/fraud/Desktop" \
-            --run-command "printf '[Desktop Entry]\\nType=Application\\nName=Chromium Browser\\nExec=chromium --no-sandbox %U\\nTerminal=false\\nCategories=Network;WebBrowser;\\n' > /home/fraud/Desktop/Chromium.desktop" \
-            --run-command "chmod +x /home/fraud/Desktop/Chromium.desktop" \
-            --run-command "printf '[Seat:*]\\nautologin-user=fraud\\nautologin-user-timeout=0\\n' > /etc/lightdm/lightdm.conf.d/50-autologin.conf" \
-            --run-command "systemctl enable lightdm NetworkManager ssh" \
-            --run-command "chown -R fraud:fraud /home/fraud" \
-            --run-command "printf '\n\n# 69LolOS Chromium desktop image\n' >> /etc/issue"
+          cat > output/user-data <<'EOF'
+          #cloud-config
+          hostname: 69lolos
+          manage_etc_hosts: true
+          package_update: true
+          package_upgrade: false
+          packages:
+            - xfce4
+            - lightdm
+            - chromium
+            - dbus-x11
+            - xserver-xorg
+            - network-manager
+            - ca-certificates
+            - fonts-liberation
+            - sudo
+            - openssh-server
+          users:
+            - default
+            - name: fraud
+              gecos: 69LolOS User
+              groups: [sudo, audio, video, plugdev, netdev]
+              shell: /bin/bash
+              lock_passwd: false
+              passwd: "$6$rounds=4096$69LolOS$kz4bVh4rYxTQJ4g3wM2Nw2R9x1k0j1YwqQm5dJjX6pQv2nK1wF8tH0d3w5Z2fY5Q2hXqK1V9v7Q7s1wQ7k0"
+          write_files:
+            - path: /etc/lightdm/lightdm.conf.d/50-autologin.conf
+              permissions: '0644'
+              content: |
+                [Seat:*]
+                autologin-user=fraud
+                autologin-user-timeout=0
+            - path: /home/fraud/Desktop/Chromium.desktop
+              owner: fraud:fraud
+              permissions: '0755'
+              content: |
+                [Desktop Entry]
+                Type=Application
+                Name=Chromium Browser
+                Exec=chromium --no-sandbox %U
+                Terminal=false
+                Categories=Network;WebBrowser;
+          runcmd:
+            - [systemctl, enable, lightdm]
+            - [systemctl, enable, NetworkManager]
+            - [systemctl, enable, ssh]
+            - [chown, -R, fraud:fraud, /home/fraud]
+            - [bash, -lc, "printf '\\n\\n# 69LolOS Chromium desktop image\\n' >> /etc/issue"]
+          final_message: "69LolOS first-boot setup finished. XFCE and Chromium are installed."
+          EOF
+          cat > output/meta-data <<'EOF'
+          instance-id: 69lolos-arm64-chromium
+          local-hostname: 69lolos
+          EOF
+          cloud-localds output/69LolOS-Chromium-seed.iso output/user-data output/meta-data
+          rm output/user-data output/meta-data
 
       - name: Prepare QEMU launch helper
         run: |
@@ -69,14 +110,15 @@ jobs:
           cat > output/README.txt <<'EOF'
           69LolOS ARM64 Chromium Desktop (QEMU)
           
-          This is a separate Debian ARM64 desktop image with XFCE and Chromium.
-          It does not replace the existing blue 69LolOS website or the Buildroot console image.
+          This is a separate Debian ARM64 cloud image. On first boot, cloud-init uses the
+          attached seed ISO to install XFCE and Chromium; the first setup needs internet and
+          may take several minutes. It does not replace the blue 69LolOS website or Buildroot image.
           
           Login user: fraud
-          Initial password: 69LolOS
-          Change this password after first login.
+          The first-boot cloud-init setup creates the user and configures desktop auto-login.
+          Chromium and XFCE install on first boot; allow time for setup to finish.
           
-          Linux host: install QEMU and an ARM64 UEFI firmware package, then run:
+          Linux host: install QEMU, cloud-init tools, and an ARM64 UEFI firmware package, then run:
             ./Run-69LolOS-Chromium-ARM64.sh
           
           The helper expects the QEMU AArch64 UEFI firmware at:
@@ -96,6 +138,7 @@ jobs:
           name: 69LolOS-ARM64-Chromium-Desktop
           path: |
             output/69LolOS-Chromium-ARM64.qcow2
+            output/69LolOS-Chromium-seed.iso
             output/Run-69LolOS-Chromium-ARM64.sh
             output/README.txt
           if-no-files-found: error
