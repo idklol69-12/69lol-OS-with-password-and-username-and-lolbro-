@@ -57,6 +57,7 @@ jobs:
           cd buildroot/output/images
           test -s Image
           test -s rootfs.ext4
+          set +e
           timeout 90s qemu-system-aarch64 \
             -machine virt -cpu cortex-a57 -m 1024 -smp 2 \
             -kernel Image \
@@ -64,6 +65,11 @@ jobs:
             -device virtio-blk-device,drive=hd0 \
             -append "root=/dev/vda rw console=ttyAMA0" \
             -nographic -no-reboot 2>&1 | tee qemu-boot.log
+          qemu_status=${PIPESTATUS[0]}
+          set -e
+          if [ "$qemu_status" -ne 0 ] && [ "$qemu_status" -ne 124 ]; then
+            exit "$qemu_status"
+          fi
           grep -E "Welcome to Buildroot|login:" qemu-boot.log
 
       - name: Upload complete QEMU OS image files
