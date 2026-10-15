@@ -339,23 +339,39 @@
         <button class="close-btn" onclick="closeApp('storeApp')">✕</button>
       </div>
       <div class="window-body">
-        <h3>Available Apps</h3>
+        <h3>69Lol OS App Store</h3>
+        <p style="color:#bbb;margin:8px 0 12px;line-height:1.5;">Built-in apps open inside 69Lol OS. Desktop apps download from their official websites; run the downloaded installer and follow Windows' prompts to finish installing.</p>
         <div class="store-grid">
           <div class="store-card">
-            <div class="store-info">
-              <span class="store-icon">🧮</span>
-              <div><strong>Calculator</strong></div>
-            </div>
+            <div class="store-info"><span class="store-icon">🧮</span><div><strong>Calculator</strong><div style="font-size:11px;color:#aaa;">Built-in app</div></div></div>
             <button class="install-btn" onclick="installApp('calcApp', this)">Get</button>
           </div>
           <div class="store-card">
-            <div class="store-info">
-              <span class="store-icon">🌐</span>
-              <div><strong>Browser</strong></div>
-            </div>
+            <div class="store-info"><span class="store-icon">🌐</span><div><strong>69Lol Browser</strong><div style="font-size:11px;color:#aaa;">Built-in app</div></div></div>
             <button class="install-btn" onclick="installApp('browserApp', this)">Get</button>
           </div>
+          <div class="store-card">
+            <div class="store-info"><span class="store-icon">🦊</span><div><strong>Mozilla Firefox</strong><div style="font-size:11px;color:#aaa;">Real desktop browser</div></div></div>
+            <button class="install-btn" onclick="downloadDesktopApp('firefox')">Download</button>
+          </div>
+          <div class="store-card">
+            <div class="store-info"><span class="store-icon">🌐</span><div><strong>Google Chrome</strong><div style="font-size:11px;color:#aaa;">Real desktop browser</div></div></div>
+            <button class="install-btn" onclick="downloadDesktopApp('chrome')">Download</button>
+          </div>
+          <div class="store-card">
+            <div class="store-info"><span class="store-icon">🎭</span><div><strong>Opera</strong><div style="font-size:11px;color:#aaa;">Real desktop browser</div></div></div>
+            <button class="install-btn" onclick="downloadDesktopApp('opera')">Download</button>
+          </div>
+          <div class="store-card">
+            <div class="store-info"><span class="store-icon">💻</span><div><strong>Visual Studio Code</strong><div style="font-size:11px;color:#aaa;">Real code editor</div></div></div>
+            <button class="install-btn" onclick="downloadDesktopApp('vscode')">Download</button>
+          </div>
+          <div class="store-card">
+            <div class="store-info"><span class="store-icon">🔵</span><div><strong>Microsoft Edge</strong><div style="font-size:11px;color:#aaa;">Real desktop browser</div></div></div>
+            <button class="install-btn" onclick="downloadDesktopApp('edge')">Download</button>
+          </div>
         </div>
+        <p style="color:#999;font-size:11px;margin-top:12px;">Note: because 69Lol OS is currently a website, it cannot install or launch Windows programs automatically. Downloads open official vendor pages.</p>
       </div>
     </div>
 
@@ -649,6 +665,19 @@
       btnElement.style.background = "#28a745";
       btnElement.onclick = function() { openApp(appId); };
       openApp(appId);
+    }
+
+    function downloadDesktopApp(appName) {
+      var downloadPages = {
+        firefox: "https://www.mozilla.org/firefox/new/",
+        chrome: "https://www.google.com/chrome/",
+        opera: "https://www.opera.com/download",
+        vscode: "https://code.visualstudio.com/download",
+        edge: "https://www.microsoft.com/edge/download"
+      };
+      var url = downloadPages[appName];
+      if (!url) return;
+      window.open(url, "_blank", "noopener");
     }
 
     // Draggable Window Logic
